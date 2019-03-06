@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-
+using System.Security.Cryptography;
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace UberMsgAPI.Controllers
@@ -16,6 +17,7 @@ namespace UberMsgAPI.Controllers
         public LoginController(UserDbContext context)
         {
             this.context = context;
+
         }
         // GET: api/<controller>
         [HttpGet]

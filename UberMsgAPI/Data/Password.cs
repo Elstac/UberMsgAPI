@@ -8,5 +8,6 @@ namespace UberMsgAPI
         public int Id { get; set; }
         public string Username { get; set; }
         public string PassHash { get; set; }
+        public byte[] Salt { get; set; }
     }
 }
