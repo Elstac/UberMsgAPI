@@ -33,8 +33,22 @@ namespace UberMsgAPI.Controllers
 
         // POST api/<controller>
         [HttpPost]
-        public void Post([FromBody]string value)
+        public IActionResult Post([FromBody]LoginRequest value)
         {
+            var quer = from pass in context.Passwords
+                         where pass.Username == value.Username
+                         select pass.PassHash;
+
+            if(quer.Count()==0)
+                return BadRequest(new { error = "Invalid user login" });
+
+            var passwd = quer.First();
+
+            if (passwd == value.Password)
+                return Ok(new { ans = "Loggedin correctly" });
+            else
+                return BadRequest(new { error = "Invalid password" });
+
         }
 
         // PUT api/<controller>/5
@@ -49,5 +63,9 @@ namespace UberMsgAPI.Controllers
         {
         }
     }
-
+    public class LoginRequest
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+    }
 }
