@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using UberMsgAPI.Classes;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -11,7 +13,14 @@ namespace UberMsgAPI.Controllers
     [Route("api/[controller]")]
     public class RegisterController : Controller
     {
-        // GET: api/<controller>
+        private UserDbContext context;
+        private IHasher hasher = new Hasher();
+
+        public RegisterController(UserDbContext context)
+        {
+            this.context = context;
+        }
+
         [HttpGet]
         public IEnumerable<string> Get()
         {
@@ -27,8 +36,26 @@ namespace UberMsgAPI.Controllers
 
         // POST api/<controller>
         [HttpPost]
-        public void Post([FromBody]string value)
+        public IActionResult Post([FromBody]RegisterRequest value)
         {
+            var sel = (from user in context.Passwords
+                      where user.Username.ToUpper() == value.Username.ToUpper()
+                      select user).ToList();
+
+            if (sel.Count != 0)
+                return BadRequest(new { error = "Account with given login already exists" });
+
+            var salt = new byte[4];
+            using(var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(salt);
+            }
+
+            var passHash = hasher.ComputeHash(value.Password, salt);
+
+            context.AddAccount(value.Username, passHash.Value, salt);
+
+            return Ok(new {answer = "Account created" });
         }
 
         // PUT api/<controller>/5
@@ -42,5 +69,11 @@ namespace UberMsgAPI.Controllers
         public void Delete(int id)
         {
         }
+    }
+
+    public class RegisterRequest
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
     }
 }

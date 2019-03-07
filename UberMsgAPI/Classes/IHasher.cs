@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 
 namespace UberMsgAPI.Classes
 {
-    interface IHasher
+    public interface IHasher
     {
-        string ComputeHash(string password, byte[] salt);
+        Hash ComputeHash(string password, byte[] salt);
     }
 }

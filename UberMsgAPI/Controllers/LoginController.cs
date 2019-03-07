@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography;
+using UberMsgAPI.Classes;
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace UberMsgAPI.Controllers
@@ -13,6 +14,7 @@ namespace UberMsgAPI.Controllers
     public class LoginController : Controller
     {
         private UserDbContext context;
+        private IHasher hasher = new Hasher();
 
         public LoginController(UserDbContext context)
         {
@@ -21,9 +23,9 @@ namespace UberMsgAPI.Controllers
         }
         // GET: api/<controller>
         [HttpGet]
-        public IEnumerable<User> Get()
+        public IEnumerable<Password> Get()
         {
-            return context.Users.ToList();
+            return context.Passwords.ToList();
         }
 
         // GET api/<controller>/5
@@ -39,18 +41,20 @@ namespace UberMsgAPI.Controllers
         {
             var quer = from pass in context.Passwords
                          where pass.Username == value.Username
-                         select pass.PassHash;
+                         select new { pass.PassHash,pass.Salt};
 
             if(quer.Count()==0)
                 return BadRequest(new { error = "Invalid user login" });
 
             var passwd = quer.First();
 
-            if (passwd == value.Password)
-                return Ok(new { ans = "Loggedin correctly" });
-            else
-                return BadRequest(new { error = "Invalid password" });
+            var hash = hasher.ComputeHash(value.Password, passwd.Salt);
 
+
+            if(hash.Equals(passwd.PassHash))
+                return Ok(new { answer = "Login succesful"});
+
+            return BadRequest(new { error = "Invalid password"});
         }
 
         // PUT api/<controller>/5
