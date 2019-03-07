@@ -14,13 +14,16 @@ namespace UberMsgAPI.Controllers
     public class LoginController : Controller
     {
         private UserDbContext context;
-        private IHasher hasher = new Hasher();
+        private IHasher hasher;
+        private ITokenGenerator tokenGenerator;
 
-        public LoginController(UserDbContext context)
+        public LoginController(UserDbContext context, IHasher hasher, ITokenGenerator tokenGenerator)
         {
             this.context = context;
-
+            this.hasher = hasher;
+            this.tokenGenerator = tokenGenerator;
         }
+
         // GET: api/<controller>
         [HttpGet]
         public IEnumerable<Password> Get()
@@ -49,10 +52,10 @@ namespace UberMsgAPI.Controllers
             var passwd = quer.First();
 
             var hash = hasher.ComputeHash(value.Password, passwd.Salt);
-
+           
 
             if(hash.Equals(passwd.PassHash))
-                return Ok(new { answer = "Login succesful"});
+                return Ok(new {token = tokenGenerator.GetToken(10)});
 
             return BadRequest(new { error = "Invalid password"});
         }

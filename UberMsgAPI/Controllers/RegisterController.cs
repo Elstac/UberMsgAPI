@@ -14,13 +14,15 @@ namespace UberMsgAPI.Controllers
     public class RegisterController : Controller
     {
         private UserDbContext context;
-        private IHasher hasher = new Hasher();
-
-        public RegisterController(UserDbContext context)
+        private IHasher hasher;
+        
+        public RegisterController(UserDbContext context, IHasher hasher)
         {
             this.context = context;
+            this.hasher = hasher;
         }
 
+        // GET api/<controller>
         [HttpGet]
         public IEnumerable<string> Get()
         {
