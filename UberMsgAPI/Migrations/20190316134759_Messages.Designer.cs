@@ -9,8 +9,8 @@ using UberMsgAPI;
 namespace UberMsgAPI.Migrations
 {
     [DbContext(typeof(UserDbContext))]
-    [Migration("20190307100906_NameChange")]
-    partial class NameChange
+    [Migration("20190316134759_Messages")]
+    partial class Messages
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -32,6 +32,24 @@ namespace UberMsgAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ActiveUsers");
+                });
+
+            modelBuilder.Entity("UberMsgAPI.Message", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Content");
+
+                    b.Property<string>("Reciver");
+
+                    b.Property<string>("Sender");
+
+                    b.Property<DateTime>("TimeStamp");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Messages");
                 });
 
             modelBuilder.Entity("UberMsgAPI.Password", b =>

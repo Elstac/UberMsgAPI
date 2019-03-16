@@ -11,6 +11,7 @@ namespace UberMsgAPI
         public DbSet<User> Users { get; set; }
         public DbSet<Password> Passwords { get; set; }
         public DbSet<ActiveUser> ActiveUsers { get; set; }
+        public DbSet<Message> Messages { get; set; }
 
         public void AddAccount(string username,byte[] passHash,byte[] salt)
         {

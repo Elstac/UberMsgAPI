@@ -32,6 +32,24 @@ namespace UberMsgAPI.Migrations
                     b.ToTable("ActiveUsers");
                 });
 
+            modelBuilder.Entity("UberMsgAPI.Message", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("Content");
+
+                    b.Property<string>("Reciver");
+
+                    b.Property<string>("Sender");
+
+                    b.Property<DateTime>("TimeStamp");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Messages");
+                });
+
             modelBuilder.Entity("UberMsgAPI.Password", b =>
                 {
                     b.Property<int>("Id")

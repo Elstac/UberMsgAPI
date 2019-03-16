@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.EntityFrameworkCore;
+using System;
 using UberMsgAPI.Classes;
+using UberMsgAPI.Models;
+using UberMsgAPI.Middleware;
 
 namespace UberMsgAPI
 {
@@ -30,13 +26,19 @@ namespace UberMsgAPI
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             services.AddDbContext<UserDbContext>(op => op.UseSqlite("Filename = Users.db"));
+            
             services.AddScoped<IHasher, Hasher>();
             services.AddScoped<ITokenGenerator, TokenGenerator>();
+            services.AddScoped<ILoginActivator , LoginActivator>();
+            services.AddTransient<ILoginValidator, LoginValidator>();
+            services.AddScoped<IMessageManager, MessageManager>();
+            services.AddScoped<IUserTokenMapper, UserTokenMapper>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -45,8 +47,9 @@ namespace UberMsgAPI
             {
                 app.UseHsts();
             }
-
+            
             app.UseHttpsRedirection();
+            app.UseAuthenticator();
             app.UseMvc();
         }
     }

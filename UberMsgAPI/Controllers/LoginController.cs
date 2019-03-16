@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography;
 using UberMsgAPI.Classes;
+using UberMsgAPI.Models;
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace UberMsgAPI.Controllers
@@ -15,29 +16,32 @@ namespace UberMsgAPI.Controllers
     {
         private UserDbContext context;
         private IHasher hasher;
-        private ITokenGenerator tokenGenerator;
+        private ILoginActivator loginActivator;
+        private IUserTokenMapper tokenMapper;
 
-        public LoginController(UserDbContext context, IHasher hasher, ITokenGenerator tokenGenerator)
+        public LoginController(UserDbContext context, IHasher hasher, ILoginActivator loginActivator, IUserTokenMapper tokenMapper)
         {
             this.context = context;
             this.hasher = hasher;
-            this.tokenGenerator = tokenGenerator;
+            this.loginActivator = loginActivator;
+            this.tokenMapper = tokenMapper;
         }
 
         // GET: api/<controller>
         [HttpGet]
-        public IEnumerable<Password> Get()
+        public IActionResult Get([FromBody]AuthorizeRequest request)
         {
-            return context.Passwords.ToList();
-        }
+            if (request.Token == null)
+                return BadRequest("No authentication token given");
 
-        // GET api/<controller>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
+            var role = tokenMapper.GetUser(request.Token).Role;
+            
+            if (role != 2)
+                return Unauthorized();
 
+            return Ok( new { passwords = context.Passwords.ToList() });
+        }
+        
         // POST api/<controller>
         [HttpPost]
         public IActionResult Post([FromBody]LoginRequest value)
@@ -52,10 +56,19 @@ namespace UberMsgAPI.Controllers
             var passwd = quer.First();
 
             var hash = hasher.ComputeHash(value.Password, passwd.Salt);
-           
 
-            if(hash.Equals(passwd.PassHash))
-                return Ok(new {token = tokenGenerator.GetToken(10)});
+            try
+            {
+                if (hash.Equals(passwd.PassHash))
+                {
+                    var token = loginActivator.ActivateLogin(value.Username);
+                    return Ok(new { Token = token });
+                }
+            }
+            catch(AlreadyLoggedInException e)
+            {
+                return BadRequest(new { error = e.Message });
+            }
 
             return BadRequest(new { error = "Invalid password"});
         }
@@ -76,5 +89,10 @@ namespace UberMsgAPI.Controllers
     {
         public string Username { get; set; }
         public string Password { get; set; }
+    }
+
+    public class AuthorizeRequest
+    {
+        public string Token { get; set; }
     }
 }
