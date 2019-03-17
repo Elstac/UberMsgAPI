@@ -33,6 +33,7 @@ namespace UberMsgAPI
             services.AddTransient<ILoginValidator, LoginValidator>();
             services.AddScoped<IMessageManager, MessageManager>();
             services.AddScoped<IUserTokenMapper, UserTokenMapper>();
+            services.AddScoped<IKeyManager, KeyManager>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
