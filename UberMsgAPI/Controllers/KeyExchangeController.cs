@@ -26,7 +26,7 @@ namespace UberMsgAPI.Controllers
 
             return keyManager.GetPendingConnections(user.Username);
         }
-
+        
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
@@ -36,7 +36,7 @@ namespace UberMsgAPI.Controllers
             var gen = keyManager.GetGenerator();
             return Ok(new { g = gen.Item1, n = gen.Item2 });
         }
-        // POST api/<controller>
+
         [HttpPost]
         public IActionResult Post([FromBody]ConnectionRequest request)
         {

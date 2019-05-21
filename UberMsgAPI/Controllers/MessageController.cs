@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using UberMsgAPI.Classes;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using UberMsgAPI.Models;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -15,11 +11,13 @@ namespace UberMsgAPI.Controllers
     {
         private IUserTokenMapper mapper;
         private IMessageManager manager;
+        private IEncriptionInfo encription;
 
-        public MessageController(IUserTokenMapper validator,IMessageManager manager)
+        public MessageController(IUserTokenMapper validator,IMessageManager manager,IEncriptionInfo encription)
         {
             this.mapper = validator;
             this.manager = manager;
+            this.encription = encription;
         }
 
         // GET: api/<controller>
@@ -35,16 +33,42 @@ namespace UberMsgAPI.Controllers
 
         // GET api/<controller>/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public IActionResult Get(int id,[FromBody] ReciverRequest request)
         {
-            return "value";
+            if (id != 0)
+                return BadRequest("Invalid ID");
+
+            var sender = mapper.GetUser(request.Token).Username;
+
+            ulong key;
+
+            try
+            {
+                key = encription.GetPublicKey(sender, request.Reciver);
+            }
+            catch(InvalidOperationException e)
+            {
+                return BadRequest(new { error = e.Message });
+            }
+
+            return Ok(new { publickey = key});
         }
 
         // POST api/<controller>
         [HttpPost]
-        public void Post([FromBody]PostMessageRequest value)
+        public IActionResult Post([FromBody]PostMessageRequest value)
         {
-            
+            var sender = mapper.GetUser(value.Token);
+            try
+            {
+                manager.SaveMessage(new Message { Reciver = value.Reciver, Sender = sender.Username, Content = value.Content });
+            }
+            catch(Exception e )
+            {
+                return BadRequest(new { error = e.Message});
+            }
+
+            return Ok();
         }
     }
 

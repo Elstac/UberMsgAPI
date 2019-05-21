@@ -8,8 +8,8 @@ namespace UberMsgAPI.Models
     public class KeyManager : IKeyManager
     {
         private UserDbContext context;
-        private int g = 2137;
-        private ulong n = 17446744073213751615;
+        private readonly int g = 2137;
+        private readonly ulong n = 17446744073213751615;
 
         public KeyManager(UserDbContext context)
         {

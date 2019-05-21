@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace UberMsgAPI.Models
 {
@@ -35,7 +34,16 @@ namespace UberMsgAPI.Models
 
         public void SaveMessage(Message message)
         {
-            throw new NotImplementedException();
+            var query = from user in context.Users
+                        where user.Username == message.Reciver
+                        select user;
+
+            if (query.ToList().Count == 0)
+                throw new InvalidOperationException("Unknown reciver");
+
+            message.TimeStamp = DateTime.Now;
+            context.Messages.Add(message);
+            context.SaveChanges();
         }
     }
 }
